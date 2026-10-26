@@ -3,6 +3,8 @@
     <string name="app_name">Home</string>
     <string name="inputs">Inputs</string>
     <string name="wifi">Wi-Fi</string>
+    <string name="remote_battery_level" translatable="false">%1$d%%</string>
+    <string name="remote_battery">Remote battery %1$d%%</string>
     <string name="settings">Settings</string>
     <string name="choose_input">Inputs</string>
     <string name="connected">Connected</string>

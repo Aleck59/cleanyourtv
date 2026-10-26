@@ -180,6 +180,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** config show_inputs_pill: false keeps the Inputs pill hidden even when the TV has inputs. */
     private boolean showInputsPill = true;
     private TextView btnWifi;
+    private TextView remoteBattery;
     /** The network pill's icon as last set, so a refresh that changes nothing does not lay the top bar out again. */
     private int wifiIcon;
     /** The pills have been filled in once; later resumes refresh them after the first frame. */
@@ -367,6 +368,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             updateClockVisibility();
         }
     };
+    private final BroadcastReceiver remoteBatteryReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            RemoteBattery.onBroadcast(intent);
+            updateRemoteBattery();
+        }
+    };
     private final Runnable minuteTick = new Runnable() {
         @Override
         public void run() {
@@ -487,6 +495,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             clockRow.addOnLayoutChangeListener(centerGreeting);
         }
         btnWifi = findViewById(R.id.btnWifi);
+        remoteBattery = findViewById(R.id.remoteBattery);
         shamsiDate = findViewById(R.id.shamsiDate);
         stats = findViewById(R.id.stats);
         raceCalendar = cfg.raceCalendar;
@@ -934,7 +943,29 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             registerReceiver(timeReceiver, timeFilter);
         }
         updateClockVisibility();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Exported: the Bluetooth app sends these, not the system.
+            registerReceiver(remoteBatteryReceiver, RemoteBattery.filter(), Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(remoteBatteryReceiver, RemoteBattery.filter());
+        }
+        updateRemoteBattery();
         tileRefresh.onStart();
+    }
+
+    /** The remote pill: the paired remote's battery percent, or gone while no remote reports one. */
+    private void updateRemoteBattery() {
+        int level = RemoteBattery.level(this);
+        if (level < 0) {
+            remoteBattery.setVisibility(View.GONE);
+            return;
+        }
+        String text = getString(R.string.remote_battery_level, level);
+        if (!TextUtils.equals(remoteBattery.getText(), text)) {
+            remoteBattery.setText(text);
+            remoteBattery.setContentDescription(getString(R.string.remote_battery, level));
+        }
+        remoteBattery.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -1173,6 +1204,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onStop();
         started = false;
         unregisterReceiver(timeReceiver);
+        unregisterReceiver(remoteBatteryReceiver);
         handler.removeCallbacks(clockCheck);
         stopped = true;
         tileRefresh.onStop();
@@ -2311,12 +2343,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         clockColumn.addView(column, clockColumn.indexOfChild(clockRow) + 1, lp);
     }
 
-    /** The first top-bar button after Inputs that is shown, in bar order (top_bar_apps, the network pill, ...); Settings is always there. */
+    /** The first top-bar button after Inputs that is shown and takes focus, in bar order (top_bar_apps, the network pill,
+     *  ...; not the remote battery pill); Settings is always there. */
     private View firstTopButton() {
         ViewGroup bar = findViewById(R.id.topButtons);
         for (int i = 0; i < bar.getChildCount(); i++) {
             View button = bar.getChildAt(i);
-            if (button != btnInputs && button.getVisibility() == View.VISIBLE) return button;
+            if (button != btnInputs && button.getVisibility() == View.VISIBLE && button.isFocusable()) return button;
         }
         return findViewById(R.id.btnSettings);
     }

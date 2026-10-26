@@ -322,6 +322,17 @@
                 android:clipToPadding="false"
                 android:orientation="horizontal">
 
+                <!-- The Bluetooth remote's battery (RemoteBattery): display only, never focused, and gone while no
+                     paired remote reports a level. -->
+                <TextView
+                    android:id="@+id/remoteBattery"
+                    style="@style/TopButton"
+                    android:focusable="false"
+                    android:clickable="false"
+                    android:singleLine="true"
+                    android:visibility="gone"
+                    android:drawableStart="@drawable/ic_remote" />
+
                 <TextView
                     android:id="@+id/btnInputs"
                     style="@style/TopButton"
