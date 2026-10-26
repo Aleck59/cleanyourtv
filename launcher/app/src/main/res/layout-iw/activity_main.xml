@@ -384,8 +384,8 @@
                     android:drawableStart="@drawable/ic_input"
                     android:nextFocusDown="@+id/grid" />
 
-                <!-- The Bluetooth remote's battery (RemoteBattery): display only, never focused, and gone while no
-                     paired remote reports a level. -->
+                <!-- The Bluetooth remote's battery (RemoteBattery): display only, never focused, and gone until a
+                     level has been read. -->
                 <TextView
                     android:id="@+id/remoteBattery"
                     style="@style/TopButton"

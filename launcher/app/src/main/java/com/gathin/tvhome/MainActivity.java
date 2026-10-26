@@ -181,6 +181,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean showInputsPill = true;
     private TextView btnWifi;
     private TextView remoteBattery;
+    private RemoteBattery remoteReader;
     /** The network pill's icon as last set, so a refresh that changes nothing does not lay the top bar out again. */
     private int wifiIcon;
     /** The pills have been filled in once; later resumes refresh them after the first frame. */
@@ -371,7 +372,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private final BroadcastReceiver remoteBatteryReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            RemoteBattery.onBroadcast(intent);
+            remoteReader.onBroadcast(intent);
             updateRemoteBattery();
         }
     };
@@ -496,6 +497,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         btnWifi = findViewById(R.id.btnWifi);
         remoteBattery = findViewById(R.id.remoteBattery);
+        remoteReader = new RemoteBattery(this, this::updateRemoteBattery);
         shamsiDate = findViewById(R.id.shamsiDate);
         stats = findViewById(R.id.stats);
         raceCalendar = cfg.raceCalendar;
@@ -949,13 +951,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         } else {
             registerReceiver(remoteBatteryReceiver, RemoteBattery.filter());
         }
+        remoteReader.refresh();
         updateRemoteBattery();
         tileRefresh.onStart();
     }
 
-    /** The remote pill: the paired remote's battery percent, or gone while no remote reports one. */
+    /** The remote pill: the remote's last known battery percent, or gone until one has been read. */
     private void updateRemoteBattery() {
-        int level = RemoteBattery.level(this);
+        int level = remoteReader.level();
         if (level < 0) {
             remoteBattery.setVisibility(View.GONE);
             return;
@@ -1205,6 +1208,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         started = false;
         unregisterReceiver(timeReceiver);
         unregisterReceiver(remoteBatteryReceiver);
+        remoteReader.stop();
         handler.removeCallbacks(clockCheck);
         stopped = true;
         tileRefresh.onStop();
