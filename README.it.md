@@ -25,6 +25,9 @@ Questa pagina presenta le funzioni principali e l'uso. Ogni modello, area geogra
 elenco di app e dei limiti propri, quindi controlla prima quello della tua TV. Quando c'è una differenza, fa fede il
 [README in inglese](README.md); le note sui singoli modelli stanno nell'[elenco delle TV](examples/README.md).
 
+**Samsung, LG, Roku o un'altra TV non Android?** CleanYourTV lì non funziona, ma puoi comunque disattivare il
+tracciamento, passo per passo con il telecomando: [cleanyour.tv/not-android](https://cleanyour.tv/not-android)
+
 ![La schermata Google TV originale a confronto con il launcher CleanYourTV](docs/stock-vs-new-side.jpg)
 
 ## Come funziona
@@ -123,7 +126,8 @@ corrispondente prima di usare un elenco.
 - Samsung Tizen e LG webOS non eseguono il launcher Android del progetto;
   [docs/devices/samsung-tizen.md](docs/devices/samsung-tizen.md) descrive cosa espone sulla rete locale una TV Tizen
   del 2021 (niente ADB, quindi niente app da disattivare). I port della community su altre piattaforme sono nei
-  [Progetti della community](SHOWCASE.md).
+  [Progetti della community](SHOWCASE.md). Per disattivare il tracciamento su Samsung, LG, Roku e altre TV non Android:
+  [cleanyour.tv/not-android](https://cleanyour.tv/not-android).
 - Per Fire TV ci sono note di pulizia da seguire a mano; il [prompt per l'assistente](PROMPT.md) non si usa su Fire TV
   e Fire OS non permette di cambiare la Home predefinita.
 - Alcune TV vendute nella Cina continentale rifiutano APK esterni o launcher di terzi. Non dedurre la compatibilità

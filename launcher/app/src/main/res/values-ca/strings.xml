@@ -10,6 +10,7 @@
     <string name="not_connected">Cap dispositiu</string>
     <string name="live_tv">TV en directe</string>
     <string name="no_inputs">No s\'ha trobat cap entrada</string>
+    <string name="more_inputs">Més entrades</string>
     <string name="good_morning">Bon dia</string>
     <string name="good_afternoon">Bona tarda</string>
     <string name="good_evening">Bon vespre</string>

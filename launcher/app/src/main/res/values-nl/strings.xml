@@ -10,6 +10,7 @@
     <string name="not_connected">Geen apparaat</string>
     <string name="live_tv">Live tv</string>
     <string name="no_inputs">Geen ingangen gevonden</string>
+    <string name="more_inputs">Meer ingangen</string>
     <string name="good_morning">Goedemorgen</string>
     <string name="good_afternoon">Goedemiddag</string>
     <string name="good_evening">Goedenavond</string>

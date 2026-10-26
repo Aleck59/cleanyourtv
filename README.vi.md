@@ -24,6 +24,9 @@ Tài liệu này giới thiệu các tính năng chung và cách dùng. Mỗi d�
 ứng dụng và giới hạn riêng, nên hãy đối chiếu với TV của bạn trước. Khi có thay đổi, [README tiếng Anh](README.md)
 là bản chuẩn; ghi chú cho từng dòng TV nằm trong [danh sách TV](examples/README.md).
 
+**TV Samsung, LG, Roku hoặc TV không chạy Android khác?** CleanYourTV không chạy được trên đó, nhưng bạn vẫn có thể
+tắt tính năng theo dõi, từng bước bằng điều khiển: [cleanyour.tv/not-android](https://cleanyour.tv/not-android)
+
 ![Màn hình Google TV gốc so với launcher CleanYourTV](docs/stock-vs-new-side.jpg)
 
 ## Cách hoạt động
@@ -118,7 +121,8 @@ sách dọn dẹp chưa chắc đã cài được launcher. Hãy đối chiếu 
 - Samsung Tizen và LG webOS không chạy được launcher Android của dự án;
   [docs/devices/samsung-tizen.md](docs/devices/samsung-tizen.md) ghi lại những gì một TV Tizen đời 2021 mở ra trong
   mạng nội bộ (không có ADB, nên không tắt được ứng dụng). Các bản chuyển sang nền tảng khác của cộng đồng nằm trong
-  [Dự án cộng đồng](SHOWCASE.md).
+  [Dự án cộng đồng](SHOWCASE.md). Để tắt tính năng theo dõi trên Samsung, LG, Roku và các TV không chạy Android khác:
+  [cleanyour.tv/not-android](https://cleanyour.tv/not-android).
 - Fire TV có các ghi chú dọn dẹp để tự làm theo; [câu lệnh cho trợ lý](PROMPT.md) không dùng cho Fire TV, và Fire OS
   không cho thay màn hình chính mặc định.
 - Một số TV bán tại Trung Quốc đại lục từ chối cài APK ngoài hoặc launcher bên thứ ba. Đừng đoán khả năng tương thích

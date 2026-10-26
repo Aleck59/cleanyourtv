@@ -2,6 +2,8 @@
 # Realtek RTD2875P SoC, RTD6748 platform, 2 GB RAM. The remote reports as "RC860G Consumer Control".
 # Same hardware family as examples/prismplus-q65-ultra-r10g/, but a different brand build
 # (ACER_FFM) with its own preloads: Claro, Kick, JioTV, CBS, Apple TV and Prime Video.
+# Second unit (#1807), Colombia: same device and firmware, but product KALLEY_FFM
+# (fingerprint KALLEY/KALLEY_FFM/R10G:14/UKR1.260612.001); the boot loop and re-enable notes below are from it.
 #
 # Apply:   TV_HOST=<tv ip> tools/disable.sh examples/kalley-r10g/debloat.txt
 # Undo:    TV_HOST=<tv ip> tools/restore.sh examples/kalley-r10g/debloat.txt com.google.android.apps.tv.launcherx

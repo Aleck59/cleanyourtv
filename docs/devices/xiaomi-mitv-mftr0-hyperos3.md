@@ -46,8 +46,10 @@ On HyperOS TV 2 and on other HyperOS TV 3 sets (MiTV-ASTR0, MiTV-MFFU0) the rout
 allowlist identity, `-PlauncherApplicationId=com.ts.launcher`, installed **before** PatchWall is disabled
 ([`xiaomi-mitv-astr0-blueplanet.md`](xiaomi-mitv-astr0-blueplanet.md),
 [`xiaomi-mitv-mftr0-debloat-home.md`](xiaomi-mitv-mftr0-debloat-home.md)). It was not tried on this OS3.0.28 set,
-so whether it gets past the `mAlways` preference and the `HOME_STATE` permission is open. Try it with ADB open
-and the two recovery lines above at hand.
+so whether it gets past the `mAlways` preference and the `HOME_STATE` permission is open here. On a third
+unit of this model on `OS3.0.103.0.UFTMATV` it took Home and survived a reboot; see
+[the model note](xiaomi-mitv-mftr0-debloat-home.md#a-third-unit-on-os30103-the-allowlist-route-works). Keep the
+two recovery lines above at hand.
 
 ## Other OS3.0 limits
 

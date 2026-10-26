@@ -10,6 +10,7 @@
     <string name="not_connected">Ei laitetta</string>
     <string name="live_tv">TV-kanavat</string>
     <string name="no_inputs">Lähteitä ei löytynyt</string>
+    <string name="more_inputs">Lisää lähteitä</string>
     <string name="good_morning">Hyvää huomenta</string>
     <string name="good_afternoon">Hyvää päivää</string>
     <string name="good_evening">Hyvää iltaa</string>

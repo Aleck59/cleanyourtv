@@ -61,7 +61,13 @@ if ($Reset) {
 if (-not $Theme) { throw 'usage: theme.ps1 <theme folder> | -Reset' }
 $config = Join-Path $Theme 'config.json'
 if (-not (Test-Path $config)) { throw "no config.json in $Theme" }
-try { Get-Content $config -Raw | ConvertFrom-Json | Out-Null } catch { throw "$config is not valid JSON" }
+try { $themeJson = Get-Content $config -Raw | ConvertFrom-Json } catch { throw "$config is not valid JSON" }
+# Config.read() answers "no overlay" for anything that is not a JSON object, so an array, a number or a
+# string is a theme the launcher drops - and it replaces the theme the set had with the built-in config.
+# Judged here, before anything is pushed, so "is on the TV" cannot mean the opposite.
+if ($themeJson -isnot [System.Management.Automation.PSCustomObject]) {
+    throw "$config is not a JSON object of theme keys, so the launcher would ignore it and the TV would go back to its built-in config (themes/README.md). Nothing was sent to the TV."
+}
 # Every collection name is checked before anything changes on the TV, as in theme.sh: a name refused halfway
 # through the push left the new config.json and part of the collection behind. b64push.py refuses '..' in a path.
 $wallpapers = Join-Path $Theme 'wallpapers'

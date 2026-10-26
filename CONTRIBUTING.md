@@ -4,6 +4,10 @@ Thanks for helping more TVs lose their ads. Three kinds of contributions are esp
 
 Working with a coding agent? Point it at [`AGENTS.md`](AGENTS.md): the same rules, written for agents.
 
+The reasons a pull request most often came back for changes or was closed, one example for each, are
+in [`docs/DOS-AND-DONTS.md`](docs/DOS-AND-DONTS.md). It is the short list of mistakes to skip, and it
+does not replace the sections below.
+
 ## Where does my idea go?
 
 The launcher stays small on purpose, so pick the smallest home that fits:
@@ -151,6 +155,8 @@ restyle, a platform port, anything with its own background services or network a
 ## Pull requests
 
 - One topic per PR. Small is fine.
+- Read [`docs/DOS-AND-DONTS.md`](docs/DOS-AND-DONTS.md) before you open one: it is why most PRs come
+  back for a change, with an example for each reason.
 - Say which TV you tested on.
 - No new dependencies in the launcher without discussing it in an issue.
 - Be kind in reviews. Most contributors here are doing this for their parents.

@@ -13,6 +13,7 @@
     <string name="not_connected">אין מכשיר</string>
     <string name="live_tv">שידור חי</string>
     <string name="no_inputs">לא נמצאו כניסות</string>
+    <string name="more_inputs">עוד כניסות</string>
     <string name="good_morning">בוקר טוב</string>
     <string name="good_afternoon">צהריים טובים</string>
     <string name="good_evening">ערב טוב</string>

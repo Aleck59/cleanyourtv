@@ -10,6 +10,7 @@
     <string name="not_connected">لا يوجد جهاز</string>
     <string name="live_tv">البث المباشر</string>
     <string name="no_inputs">لم يتم العثور على مدخلات</string>
+    <string name="more_inputs">مدخلات أخرى</string>
     <string name="good_morning">صباح الخير</string>
     <string name="good_afternoon">مساء الخير</string>
     <string name="good_evening">مساء الخير</string>

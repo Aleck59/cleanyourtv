@@ -62,8 +62,29 @@ if [ "${1:-}" = --reset ]; then
 fi
 THEME="${THEME_ARG:?usage: theme.sh <theme folder> | --reset}"
 [ -f "$THEME/config.json" ] || { echo "no config.json in $THEME" >&2; exit 1; }
-"$PY" -I -c 'import json,sys; json.load(open(sys.argv[1], encoding="utf-8-sig"))' "$THEME/config.json" 2>/dev/null \
-  || { echo "$THEME/config.json is not valid JSON" >&2; exit 1; }
+# What the launcher makes of the file: Config.read() answers "no overlay" for anything that is not a JSON
+# object, so an array, a number or a string is a theme the TV drops - and it replaces the theme the set had,
+# which puts the built-in config.xml back. Reading the shape here, before anything is pushed, keeps a run
+# that ends "is on the TV" from meaning the opposite.
+theme_json_kind() {
+  "$PY" -I -c '
+import json, sys
+try:
+    with open(sys.argv[1], encoding="utf-8-sig") as handle:
+        theme = json.load(handle)
+except (OSError, ValueError):
+    print("invalid")
+else:
+    print("object" if isinstance(theme, dict) else "not an object")
+' "$1" 2>/dev/null
+}
+case "$(theme_json_kind "$THEME/config.json")" in
+  object) ;;
+  "not an object") echo "$THEME/config.json is not a JSON object of theme keys, so the launcher would ignore" \
+    "it and the TV would go back to its built-in config (themes/README.md). Nothing was sent to the TV." >&2
+    exit 1 ;;
+  *) echo "$THEME/config.json is not valid JSON" >&2; exit 1 ;;
+esac
 # Every collection name is checked before anything changes on the TV: a name refused halfway through the push
 # left the new config.json and part of the collection behind. b64push.py refuses a path with '..' in it, so
 # such a name (sunset..jpg) is refused here too. The names that pass have no spaces, so NAMES splits on them.

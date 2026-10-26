@@ -10,6 +10,7 @@
     <string name="not_connected">Žádné zařízení</string>
     <string name="live_tv">Televize</string>
     <string name="no_inputs">Nenašly se žádné vstupy</string>
+    <string name="more_inputs">Další vstupy</string>
     <string name="good_morning">Dobré ráno</string>
     <string name="good_afternoon">Dobré odpoledne</string>
     <string name="good_evening">Dobrý večer</string>

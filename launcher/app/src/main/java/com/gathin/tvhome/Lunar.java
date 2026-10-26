@@ -16,10 +16,14 @@ final class Lunar {
     private Lunar() {
     }
 
-    /** Hours east of UTC used for the calendar: lunar_utc_offset, or 7 for Vietnamese and 8 otherwise. */
+    /** Hours east of UTC used for the calendar: lunar_utc_offset, or 7 for Vietnamese, 9 for Korean and 8 otherwise. */
     static int offsetFor(int configured, Locale locale) {
         if (configured >= 0) return configured;
-        return "vi".equals(locale.getLanguage()) ? 7 : 8;
+        switch (locale.getLanguage()) {
+            case "vi": return 7;
+            case "ko": return 9;
+            default: return 8;
+        }
     }
 
     /** Today's lunar date, formatted with the locale's strings. */

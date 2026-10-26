@@ -159,7 +159,7 @@ class AgentsNumbersTest(unittest.TestCase):
 
     def test_commands_are_the_ones_ci_runs(self):
         ci = CI.read_text(encoding="utf-8")
-        for command in ("python3 -m unittest discover -s tests -v",
+        for command in ("tools/venv/bin/python -m unittest discover -s tests -v",
                         "./gradlew --no-daemon testReleaseUnitTest lintRelease assembleRelease",
                         "CLEANYOURTV_STRICT"):
             with self.subTest(command=command):

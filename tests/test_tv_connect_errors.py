@@ -234,6 +234,25 @@ class TvConnectErrorTest(unittest.TestCase):
         self.assertIn("could not reach 192.0.2.1:5555 ([Errno 65] No route to host). Is the TV on and on "
                       "this network?", result.stderr)
 
+    # RUNNER raises OSError(65, ...), and 65 is EHOSTUNREACH on macOS but ENOPKG on Linux, so this is the
+    # platform tv.py adds the Local Network note on. Skipped elsewhere rather than faked: the note exists to
+    # be read on a Mac, and a test that passed on Linux CI while failing on a contributor's Mac is worse
+    # than no test. The sentence above stays in both messages, so the test before this one covers both.
+    @unittest.skipUnless(sys.platform == "darwin", "the Local Network note is macOS-only")
+    def test_macos_adds_the_local_network_privacy_note_to_an_unreachable_host(self):
+        result = self.run_tv(["-c", RUNNER, str(self.tv), "OSError", "No route to host"], TV_HOST="192.0.2.1")
+        self.assertExplained(result)
+        self.assertIn("On macOS this is also what Local Network privacy looks like.", result.stderr)
+        # The two things a reader gets wrong: which app to allow, and whether the network is at fault.
+        self.assertIn("granting it to python or adb does nothing", result.stderr)
+        self.assertIn("try the default gateway", result.stderr)
+
+    @unittest.skipIf(sys.platform == "darwin", "the Local Network note belongs on macOS")
+    def test_other_platforms_keep_the_plain_unreachable_message(self):
+        result = self.run_tv(["-c", RUNNER, str(self.tv), "OSError", "No route to host"], TV_HOST="192.0.2.1")
+        self.assertExplained(result)
+        self.assertNotIn("Local Network privacy", result.stderr)
+
     def test_an_error_it_has_nothing_to_add_to_keeps_its_traceback(self):
         # Only the STLS answer is a Wireless debugging port; any other unknown command is left as it was.
         for error, message in (("InvalidChecksumError", "Received checksum 1 != 2"),

@@ -37,11 +37,23 @@ try:
 except ImportError:
     sys.exit("readme_stats.py needs Pillow: tools/venv/bin/pip install -r tools/requirements-perf.txt")
 
-STATS = [("316", "TV MODELS"), ("89", "BRANDS"), ("28", "LANGUAGES"), ("523 KB", "LAUNCHER")]
+STATS = [("332", "TV MODELS"), ("91", "BRANDS"), ("28", "LANGUAGES"), ("526 KB", "LAUNCHER")]
 W, H = 1600, 240
 img = Image.new("RGB", (W, H), "#15181e"); d = ImageDraw.Draw(img)
 def f(size, wt):
-    x = ImageFont.truetype(FONT, size); x.set_variation_by_axes([wt]); return x
+    # A path that exists is not yet a font: Google Fonts serves Fredoka as a zip holding the variable
+    # `Fredoka[wdth,wght].ttf` and a folder of static single-weight files beside it. `truetype` answers a
+    # zip with `OSError: unknown file format` and `set_variation_by_axes` answers a static file with
+    # `OSError: invalid argument` - neither names the argument that was wrong, and both arrive as a
+    # Pillow traceback in the middle of a draw. Name the file and what it has to be instead.
+    try:
+        x = ImageFont.truetype(FONT, size); x.set_variation_by_axes([wt])
+    except (OSError, ValueError) as error:
+        sys.exit(f"cannot use the font at {FONT}: {error}. The card is drawn with Fredoka's variable TTF\n"
+                 "(Fredoka[wdth,wght].ttf from Google Fonts), not the zip it is downloaded in and not one of\n"
+                 "the static single-weight files beside it, which have no weight to set. Nothing was written.")
+    return x
+f(12, 400)  # the font is the argument the reader brings, so a wrong one is named before any drawing
 num, lab = f(92, 600), f(30, 500)
 PAD = 70
 col = (W - 2 * PAD) / len(STATS)

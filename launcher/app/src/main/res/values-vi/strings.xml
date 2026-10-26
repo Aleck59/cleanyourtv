@@ -10,6 +10,7 @@
     <string name="not_connected">Không có thiết bị</string>
     <string name="live_tv">Truyền hình</string>
     <string name="no_inputs">Không tìm thấy nguồn vào</string>
+    <string name="more_inputs">Nguồn vào khác</string>
     <!-- Vietnamese greets the same way at any hour. -->
     <string name="good_morning">Xin chào</string>
     <string name="good_afternoon">Xin chào</string>

@@ -10,6 +10,7 @@
     <string name="not_connected">Ingen enhet</string>
     <string name="live_tv">Direkte-TV</string>
     <string name="no_inputs">Fant ingen innganger</string>
+    <string name="more_inputs">Flere innganger</string>
     <string name="good_morning">God morgen</string>
     <string name="good_afternoon">God ettermiddag</string>
     <string name="good_evening">God kveld</string>

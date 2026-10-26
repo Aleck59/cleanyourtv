@@ -10,6 +10,7 @@
     <string name="not_connected">Tidak ada perangkat</string>
     <string name="live_tv">TV Langsung</string>
     <string name="no_inputs">Tidak ada input ditemukan</string>
+    <string name="more_inputs">Input lainnya</string>
     <string name="good_morning">Selamat Pagi</string>
     <string name="good_afternoon">Selamat Siang</string>
     <string name="good_evening">Selamat Sore</string>

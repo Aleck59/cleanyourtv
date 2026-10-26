@@ -10,6 +10,7 @@
     <string name="not_connected">Aucun appareil</string>
     <string name="live_tv">TV en direct</string>
     <string name="no_inputs">Aucune source trouvée</string>
+    <string name="more_inputs">Autres sources</string>
     <string name="good_morning">Bonjour</string>
     <string name="good_afternoon">Bon après-midi</string>
     <string name="good_evening">Bonsoir</string>

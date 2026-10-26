@@ -10,6 +10,7 @@
     <string name="not_connected">ไม่มีอุปกรณ์</string>
     <string name="live_tv">ทีวีสด</string>
     <string name="no_inputs">ไม่พบแหล่งสัญญาณ</string>
+    <string name="more_inputs">แหล่งสัญญาณเพิ่มเติม</string>
     <string name="good_morning">สวัสดีตอนเช้า</string>
     <string name="good_afternoon">สวัสดีตอนบ่าย</string>
     <string name="good_evening">สวัสดีตอนเย็น</string>

@@ -41,7 +41,20 @@ except ImportError:
 BG, LINE, DIM, GREEN = "#15181e", "#2c313a", "#aab3bd", "#cfffcf"
 W = 1600
 def f(size, wt):
-    x = ImageFont.truetype(FONT, size); x.set_variation_by_axes([wt]); return x
+    # A path that exists is not yet a font: Google Fonts serves Fredoka as a zip holding the variable
+    # `Fredoka[wdth,wght].ttf` and a folder of static single-weight files beside it. `truetype` answers a
+    # zip with `OSError: unknown file format` and `set_variation_by_axes` answers a static file with
+    # `OSError: invalid argument` - neither names the argument that was wrong, and both arrive as a
+    # Pillow traceback in the middle of a draw. Name the file and what it has to be instead.
+    try:
+        x = ImageFont.truetype(FONT, size); x.set_variation_by_axes([wt])
+    except (OSError, ValueError) as error:
+        sys.exit(f"cannot use the font at {FONT}: {error}. The card is drawn with Fredoka's variable TTF\n"
+                 "(Fredoka[wdth,wght].ttf from Google Fonts), not the zip it is downloaded in and not one of\n"
+                 "the static single-weight files beside it, which have no weight to set. Nothing was written.")
+    return x
+f(12, 400)  # the font is the argument the reader brings, so a wrong one is named before any drawing
+
 def spaced(d, cx, y, t, font, sp, fill):
     w = sum(d.textlength(c, font=font) for c in t) + sp * (len(t) - 1); x = cx - w / 2
     for c in t: d.text((x, y), c, font=font, fill=fill); x += d.textlength(c, font=font) + sp

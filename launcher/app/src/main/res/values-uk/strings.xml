@@ -10,6 +10,7 @@
     <string name="not_connected">Немає пристрою</string>
     <string name="live_tv">Телеканали</string>
     <string name="no_inputs">Джерел не знайдено</string>
+    <string name="more_inputs">Інші джерела</string>
     <string name="good_morning">Доброго ранку</string>
     <string name="good_afternoon">Добрий день</string>
     <string name="good_evening">Добрий вечір</string>

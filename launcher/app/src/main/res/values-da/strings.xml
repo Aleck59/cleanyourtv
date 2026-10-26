@@ -10,6 +10,7 @@
     <string name="not_connected">Ingen enhed</string>
     <string name="live_tv">Live-TV</string>
     <string name="no_inputs">Ingen indgange fundet</string>
+    <string name="more_inputs">Flere indgange</string>
     <string name="good_morning">God morgen</string>
     <string name="good_afternoon">God eftermiddag</string>
     <string name="good_evening">God aften</string>
@@ -32,6 +33,7 @@
     <string name="vpn_off">VPN fra</string>
     <string name="home_settings">Vælg standard-startskærm</string>
     <string name="launcher_settings">Launcher-indstillinger</string>
+    <string name="native_settings">Producentindstillinger</string>
     <string name="columns_label">Apps pr. række</string>
     <string name="rows_below_dock_label">Rækker under docken</string>
     <string name="dock_opacity_label">Docken: gennemsigtighed</string>

@@ -11,6 +11,16 @@ LIST="${1:?usage: disable.sh <debloat list>}"
 LIST_DIR="$(cd "$(dirname "$LIST")" && { pwd -W 2>/dev/null || pwd; })"
 LIST="$LIST_DIR/$(basename "$LIST")"
 cd "$(dirname "$0")/.."
+# The safety overrides are read from the environment. `FORCE_HOME=1 tools/disable.sh ...` lasts one
+# command, but an exported value stays set for the shell and reaches child processes (check.py --fix).
+# Say which ones are on: without it, a later run skips its safety check and nothing in the output says
+# why (#1845).
+for override in FORCE_SETUPWRAITH FORCE_HOME TVINPUT_ALLOW HANDLERS_ALLOW; do
+  if [ -n "${!override:-}" ]; then
+    echo "note: $override=${!override} is set; the safety check it overrides stays off until it is" >&2
+    echo "cleared (unset $override)." >&2
+  fi
+done
 PY=tools/venv/bin/python
 [ -x "$PY" ] || PY=tools/venv/Scripts/python.exe
 export MSYS_NO_PATHCONV=1
@@ -28,7 +38,7 @@ export MSYS_NO_PATHCONV=1
 # so a list whose entries are all commented out (what CONTRIBUTING asks for while one is untested)
 # read exactly like a run that died halfway.
 PKGS=$(LC_ALL=C awk 'NR==1{sub(/^\357\273\277/,"")} {sub(/\r$/,""); print}' "$LIST" \
-  | grep -vE '^\s*(#|$)' | sed -E 's/\s+#.*$//' | awk '{print $1}' || true)
+  | grep -vE '^\s*(#|$)' | sed -E 's/[[:space:]]+#.*$//' | awk '{print $1}' || true)
 BAD=$(printf '%s\n' "$PKGS" | grep -vE '^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+$' || true)
 if [ -n "$BAD" ]; then
   { echo "refusing $LIST: not a package name:"; printf '%s\n' "$BAD" | sed 's/^/  /'; } >&2
@@ -213,9 +223,27 @@ if [ -n "$PKGS" ] && [ -z "${TVINPUT_ALLOW:-}" ]; then
   # Trailing `; true`: the loop's status is the last package's `grep -q`, which is nonzero whenever
   # the last listed package is not an input driver — the common case — and would look like a failed
   # check. Only a real failure (tv.py cannot reach the TV) should reach the warning below.
+  # Per package, in the order that costs the least: the "requested permissions" block (Android 6.0+),
+  # then on a dump with no such block at all — Lollipop prints only "grantedPermissions:" — the
+  # package's own granted block, then its Service Resolver Table, which Lollipop's per-package dump
+  # prints and which names what serves android.media.tv.TvInputService. "Unable to find" is a package
+  # that is not on this TV, not a check that failed. A dump with neither block nor error (NOCHK) is
+  # one the guard cannot read: the package is kept off the batch below instead of passing silently.
   if TV_HW="$("$PY" -I tools/tv.py \
-      "for p in $NAMES; do dumpsys package \$p | sed -n -E '/requested permissions:/,/(install|runtime) permissions:|User [0-9]+:/p' | grep -q TV_INPUT_HARDWARE && echo \$p; done; true" \
+      "for p in $NAMES; do d=\$(dumpsys package \$p 2>/dev/null); case \$d in *'requested permissions:'*) printf '%s\n' \"\$d\" | sed -n -E '/requested permissions:/,/(install|runtime) permissions:|User [0-9]+:/p' | grep -q TV_INPUT_HARDWARE && echo \$p;; *'grantedPermissions:'*) printf '%s\n' \"\$d\" | sed -n -E '/grantedPermissions:/,/(install|runtime) permissions:|User [0-9]+:/p' | grep -q TV_INPUT_HARDWARE && echo \$p;; *'Service Resolver Table:'*) printf '%s\n' \"\$d\" | grep -q 'android.media.tv.TvInputService' && echo \$p;; *'Unable to find'*) :;; *) echo \"NOCHK \$p\";; esac; done; true" \
       </dev/null 2>/dev/null | tr -d '\r')"; then
+    # Packages whose dump shows neither block: keep them enabled (a black input is easy to blame on
+    # the cable, and the ports are the one thing the owner cannot test from here) and say why.
+    UNCHECKED="$(printf '%s\n' "$TV_HW" | sed -n -E 's/^NOCHK ([^[:space:]]+)$/\1/p')"
+    for p in $UNCHECKED; do
+      printf '%s\n' "$PKGS" | grep -xF "$p" >/dev/null || continue
+      echo "Skipping $p: the TV's dumpsys shows neither a requested nor a granted permission block" >&2
+      echo "for it, so this firmware's answer cannot be read for the input-driver check (Android 5.x" >&2
+      echo "prints neither). It stays enabled: once every input still works after a reboot, set" >&2
+      echo "TVINPUT_ALLOW=1 to disable it (#321)." >&2
+      PKGS="$(printf '%s\n' "$PKGS" | grep -vxF "$p" || true)"
+    done
+    TV_HW="$(printf '%s\n' "$TV_HW" | grep -v '^NOCHK ' || true)"
     for p in $TV_HW; do
       # grep without -q: with pipefail an early exit could SIGPIPE printf and fail the run (see above).
       printf '%s\n' "$PKGS" | grep -xF "$p" >/dev/null || continue
@@ -255,6 +283,14 @@ if [ -n "$PKGS" ] && [ -z "${HANDLERS_ALLOW:-}" ]; then
     NAME_RE='s#^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z0-9_]+)+)/.*#\1#p'
     INPUT_APPS="$(printf '%s\n' "$HANDLERS" | sed '/^==$/,$d' | sed -n -E "$NAME_RE" | sort -u)"
     SETTINGS_APPS="$(printf '%s\n' "$HANDLERS" | sed '1,/^==$/d' | sed -n -E "$NAME_RE" | sort -u)"
+    # A working query always has some app answering android.settings.SETTINGS. An empty answer means
+    # the firmware has no `cmd` (or answered nothing at all): both lists are empty, nothing below is
+    # skipped, and without this line the guard passes in silence (#973, #1089).
+    if [ -z "$SETTINGS_APPS" ]; then
+      echo "Could not check which listed packages open the TV's inputs and Settings: the query" >&2
+      echo "answered with nothing at all (this firmware may have no 'cmd'). After this run, open an" >&2
+      echo "HDMI input and Settings from the launcher before you put the remote down." >&2
+    fi
     for p in $INPUT_APPS; do
       printf '%s\n' "$PKGS" | grep -xF "$p" >/dev/null || continue
       echo "Skipping $p: the TV opens its HDMI/AV inputs and channels with it, so with it disabled the" >&2
