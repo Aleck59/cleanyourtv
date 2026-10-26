@@ -3,6 +3,8 @@
     <string name="app_name">Home</string>
     <string name="inputs">Inputs</string>
     <string name="wifi">Wi-Fi</string>
+    <string name="tv_power_name">TV power over HDMI-CEC</string>
+    <string name="tv_power_description">The remote&apos;s power button turns the TV off and on over HDMI-CEC, and the box stays awake.</string>
     <string name="remote_battery_level" translatable="false">%1$d%%</string>
     <string name="remote_battery">Remote battery %1$d%%</string>
     <string name="settings">Settings</string>

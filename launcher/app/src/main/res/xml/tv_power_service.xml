@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keys only, like home_key_service.xml: a key pressed while the TV is off tells TvPowerService that the TV
+     was turned on some other way. No accessibility event types, so the system never calls in for events. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagRequestFilterKeyEvents"
+    android:canRequestFilterKeyEvents="true"
+    android:description="@string/tv_power_description" />

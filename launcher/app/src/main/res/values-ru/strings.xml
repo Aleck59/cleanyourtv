@@ -3,6 +3,8 @@
     <string name="app_name">Главный экран</string>
     <string name="inputs">Источники</string>
     <string name="wifi">Wi-Fi</string>
+    <string name="tv_power_name">Питание ТВ по HDMI-CEC</string>
+    <string name="tv_power_description">Кнопка питания на пульте выключает и включает телевизор по HDMI-CEC, а приставка не засыпает.</string>
     <string name="remote_battery">Заряд пульта %1$d%%</string>
     <string name="settings">Настройки</string>
     <string name="choose_input">Источники</string>

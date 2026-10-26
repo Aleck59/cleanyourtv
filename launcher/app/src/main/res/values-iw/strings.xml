@@ -3,6 +3,8 @@
     <string name="app_name">בית</string>
     <string name="inputs">כניסות</string>
     <string name="wifi">Wi-Fi</string>
+    <string name="tv_power_name">הפעלת הטלוויזיה ב-HDMI-CEC</string>
+    <string name="tv_power_description">כפתור ההפעלה בשלט מכבה ומדליק את הטלוויזיה ב-HDMI-CEC, והממיר נשאר פעיל.</string>
     <string name="remote_battery">סוללת השלט %1$d%%</string>
     <string name="settings">הגדרות</string>
     <string name="choose_input">כניסות</string>
