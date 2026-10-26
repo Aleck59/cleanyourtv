@@ -3,6 +3,7 @@
     <string name="app_name">בית</string>
     <string name="inputs">כניסות</string>
     <string name="wifi">Wi-Fi</string>
+    <string name="remote_battery">סוללת השלט %1$d%%</string>
     <string name="settings">הגדרות</string>
     <string name="choose_input">כניסות</string>
     <string name="connected">מחובר</string>
