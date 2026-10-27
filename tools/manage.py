@@ -269,7 +269,7 @@ def theme_config(folder):
     if not path.is_file():
         return {}, None            # a folder of their own with no config.json yet: set starts the file
     try:
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeDecodeError) as e:
         return {}, f"cannot read {path}: {reason(e)}. Nothing was written or pushed."
     try:

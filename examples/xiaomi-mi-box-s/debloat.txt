@@ -33,6 +33,9 @@
 #   - The saved Wi-Fi belonged to android.uid.system, not setupwraith; setupwraith was not needed.
 #   - The Apps button (scancode 580, ALL_APPS) opens Home with the launcher's HomeKeyService
 #     (build-and-install -HomeKeyService). Home, Back, voice and Netflix work without it.
+#   - On remotes with a Live button (scancode 399), disabling com.google.android.tv triggers
+#     partnercustomizer to open Google Play unless remapped via app_keys ("scan:399:<package>",
+#     build-and-install -InputKeyService).
 #
 # Third unit (same PI.3933 build), Turkey, 2026-09-17 to 2026-10-24 (37 days):
 #   - Xiaomi's update service enables PatchWall again. Its component applife.LifeKeeper installs

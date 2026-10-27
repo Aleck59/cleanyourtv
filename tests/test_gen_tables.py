@@ -267,6 +267,8 @@ class FontTest(unittest.TestCase):
             root = tree(Path(tmp) / "repo", [("tcl-a", tv("TCL A", "TCL"))])
             # The real script, whose counts this tree changes, so --font hands it the font.
             shutil.copy(ROOT / "tools" / "readme_stats.py", root / "tools" / "readme_stats.py")
+            # A checkout has docs/, where the picture goes: the script names the folder it cannot find.
+            (root / "docs").mkdir()
             caller = Path(tmp) / "caller"
             caller.mkdir()
             (caller / "Fredoka.ttf").write_bytes(b"")

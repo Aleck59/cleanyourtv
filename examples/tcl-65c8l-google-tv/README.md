@@ -135,7 +135,7 @@ Private DNS to an ad-blocking resolver works on this TV (it does not block YouTu
 ## After a firmware update
 
 ```
-TV_HOST=<tv ip> tools/check.py examples/tcl-65c8l-google-tv/debloat.txt com.gathin.tvhome
+TV_HOST=<tv ip> tools/venv/bin/python -I tools/check.py examples/tcl-65c8l-google-tv/debloat.txt com.gathin.tvhome
 ```
 
 Add `--fix` after `check.py` to re-disable whatever came back and put the launcher back on Home.

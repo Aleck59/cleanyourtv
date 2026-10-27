@@ -4,6 +4,12 @@ A second set on the same platform and firmware as the list above: **Nikkei DVB91
 device `ikebukuro`, MediaTek/MStar `m5621`), Android TV 11, build `RTO2.250804.001`, Italy, Wi-Fi, 0.9 GB RAM, 4.2 GB
 data partition, 32-bit ARM. One evening of use, one reboot after the cleanup.
 
+## Also reported: Changhong AI PONT / DVB91
+
+An owner reports a **Changhong AI PONT / DVB91** with the same device (`ikebukuro`) and build (`RTO2.250804.001`,
+incremental `13882904`), Android TV 11 / API 30, Italy, 32-bit ARM (`armeabi-v7a`), about 0.9 GB RAM and a 4.2 GB data
+partition. Which list was applied there isn't recorded, so read it as a model match for this folder, not a second test of it.
+
 ## What was disabled
 
 Batches 1 and 2 of `debloat.txt` were applied (batches 3 and 4 were not), with these differences:
@@ -46,5 +52,6 @@ Settings button opens the TV's own Settings. Same symptom as #1680 on another mo
 
 ## Not tested
 
-- A multi-day soak.
+- A multi-day soak on the Nikkei DVB91NK.
 - Whether a cable or antenna scan works with the "TV in diretta" tile: the tile opens `tvcenter`.
+- A multi-day soak of the owner's Changhong DVB91 unit.

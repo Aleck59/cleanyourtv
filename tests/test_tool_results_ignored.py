@@ -44,9 +44,15 @@ def ignored(path):
 
 
 def default_of(tool, flag):
-    """The default of one argument, out of the tool's own parser."""
+    """The default of one argument, out of the tool's own call to add_argument().
+
+    Read from the whole call, not from the flag and the default side by side: an argument takes
+    type=, metavar= and help= as well, in whatever order the tool writes them, and bench.py's
+    --out-dir grew a type= when it started judging the folder before opening the TV.
+    """
     text = (TOOLS / tool).read_text(encoding="utf-8")
-    found = re.search(r'"%s",\s*default="([^"]+)"' % re.escape(flag), text)
+    call = re.search(r'add_argument\(\s*"%s"(.*?)\)\s*\n' % re.escape(flag), text, re.S)
+    found = re.search(r'default="([^"]*)"', call[1]) if call else None
     return found[1] if found else ""
 
 

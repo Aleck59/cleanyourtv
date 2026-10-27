@@ -166,6 +166,16 @@ stepped the volume, so the helpers do not seem to receive the volume key on this
 the G03's double step, has nothing to repeat. The empty-list control was not run. The owner kept the helpers for
 the gear, YouTube and TCL buttons.
 
+A TCL 75Q7CXB (G08, Google TV 14, `UTT2.250416.001 AU02`), launcherx and setupwraith disabled with this
+launcher as Home, loses the ramp the same way, and with `HomeKeyService` alone as well: with both helpers bound,
+then with `enabled_accessibility_services` set to `HomeKeyService` only (`dumpsys accessibility` showing one bound
+service), the owner's held volume up moved one step per press each time. That one-helper run also kept the app
+buttons in `app_keys` and the gear in `settings_key_keycodes` working. The 55Q6C in
+[`examples/tcl-q7c-google-tv`](../../examples/tcl-q7c-google-tv/README.md), on the same build, kept ramping
+with `HomeKeyService` bound, but it kept launcherx enabled and went through `stock_home_redirect`; so on this
+build one bound helper is enough to cost the ramp once launcherx is gone. The empty-list control was not run
+here either.
+
 ## The path in the Android 12 source, and a Philips set measured both ways
 
 The Hisense reading above holds line by line in AOSP `android12-release`, and a fourth vendor measures the

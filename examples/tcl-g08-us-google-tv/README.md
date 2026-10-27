@@ -109,3 +109,20 @@ launcherx for the reference launcher. All of it came through a reboot the same d
   ```
 
   The held-volume trade described above applies to this helper; it was not measured on this unit.
+
+## Fourth unit: Cast and the freezer
+
+Another `G08_4K_US` set on `UTT2.250416.001 AU16`, in Google TV basic mode with no account, launcherx and the setup
+wizard disabled for a custom Home app. Seen 22 and 23 October 2026.
+
+- **Cast froze.** With launcherx off, `com.google.android.apps.mediashell` sat in the cached state and Android 14's
+  freezer stopped it every few minutes (`isFrozen=true`, `curProcState=19`, and `ActivityManager: freezing <pid>
+  com.google.android.apps.mediashell` in `logcat`). Phones found the TV slowly or not at all, and once its 8009
+  connections sat in `CLOSE_WAIT`. Having the Home app bind `.CastReceiverService` (action
+  `com.google.cast.action.BIND`) kept it at `vis (service)` in `dumpsys activity oom`, and it has not frozen since.
+  Details and the caveat in
+  [TROUBLESHOOTING](../../docs/TROUBLESHOOTING.md#working-on-the-tv), under "Casting disappears although the Cast
+  receiver is still running".
+- **Reinstalling the Home app can switch the TV to an input.** While Home restarts, TCL's player `com.tcl.tv` is next
+  in the back stack: it resumes, re-tunes its last input (here the AirPlay input) and stays in front.
+  `am force-stop com.tcl.tv` before `pm install -r` avoids it.

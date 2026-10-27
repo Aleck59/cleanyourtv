@@ -12,6 +12,10 @@ Set TV_HOST to the TV's IP (or IP:port). Usage:
     tv.py --reboot                     return once the reboot request is accepted; the TV may still be restarting
     tv.py --help                       this text; needs neither the venv nor a TV
 
+Exit status: 0 the command ran (the TV's own answer is in its output), 1 the screenshot came back
+empty or failed, 2 it was refused before anything ran on the TV - a flag it does not have, a local
+path that is not there, a port it could not open.
+
 Set TV_ADB_BINARY to the Google adb executable to use an already connected, paired transport
 (including encrypted Wireless debugging). See tools/native-adb.md.
 """
@@ -328,8 +332,59 @@ def check_arity(args):
         sys.exit(2)
     if args and args[0] == "--screenshot":
         screenshot_args(args[1:])
+    elif args and args[0] in ("--push", "--pull"):
+        transfer_args(args)
     elif args and args[0].startswith("-") and args[0] not in ARITY:
         usage_error(f"not a flag of tv.py: {args[0]!r}")
+
+
+def transfer_args(args):
+    """Judge the two paths of --push/--pull before the TV is opened.
+
+    adb_shell opens the local path itself, so a path typed from the wrong folder was a
+    FileNotFoundError traceback that only started once the connection had been made: exit 1, the code
+    this script otherwise returns for a screenshot that came back empty, and not a word saying the run
+    had sent nothing. --pull writes to the name it is given, so a folder sitting there was
+    IsADirectoryError and a name in a folder that does not exist FileNotFoundError, both after the TV
+    had already been asked for the file - tools/b64push.py's own local path has been answered this way
+    since #1633. All of these are wrong before anything can be sent, so they are answered here, in the
+    words b64push.py uses, and the TV is never opened for them.
+
+    The two directions do not share one rule: a folder is a valid --push argument (adb_shell sends the
+    files inside it), while --pull needs a file name inside a folder that is there.
+    """
+    if len(args) != 3:      # check_arity has already answered the count
+        return
+    push = args[0] == "--push"
+    local, remote = (args[1], args[2]) if push else (args[2], args[1])
+    if push:
+        if not remote:
+            usage_error("--push needs the path on the TV to write to")
+        if not local:
+            usage_error("--push needs the local file to send")
+        if os.path.isdir(local):
+            return          # adb_shell pushes the files inside it
+        try:
+            # Opened, not read: adb_shell opens it the same way, and a 500 KB APK is not loaded to
+            # find out that it is not there.
+            with open(local, "rb"):
+                pass
+        except OSError as e:
+            path_error(f"cannot read {local}: {e.strerror or e}. Nothing was sent to the TV.")
+        return
+    if not remote:
+        usage_error("--pull needs the path on the TV to read")
+    if not local:
+        usage_error("--pull needs the local file to save to")
+    folder = os.path.dirname(os.path.abspath(local))
+    if not os.path.isdir(folder):
+        path_error(f"there is no folder {folder} for {local}: create it, or pull into a folder that is "
+                   f"there. Nothing was pulled.")
+    if os.path.isdir(local):
+        path_error(f"{local} is a folder, and --pull writes the file to the name it is given: give a "
+                   f"file name. Nothing was pulled.")
+    if os.path.exists(local) and not os.access(local, os.W_OK):
+        path_error(f"cannot write {local}: permission denied. Nothing was pulled.")
 
 
 def screenshot_args(rest):
@@ -371,6 +426,15 @@ def screenshot_args(rest):
 
 def usage_error(message):
     sys.stderr.write(f"{message}\n{USAGE}")
+    sys.exit(2)
+
+
+def path_error(message):
+    """Refuse a path that cannot be used, before anything is sent. Exit 2, no usage block.
+
+    The message already says which path and why; the usage block would only repeat two lines the
+    caller did type correctly."""
+    sys.stderr.write(f"{message}\n")
     sys.exit(2)
 
 

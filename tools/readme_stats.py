@@ -28,7 +28,37 @@ def font_and_out(argv):
     return font, out
 
 
+def out_problem(path):
+    """Why the picture at `path` cannot be written, or None.
+
+    The second argument the reader types, and the one Pillow only judges at the end of the draw:
+    `img.save()` answers a folder with IsADirectoryError, a path through a file with NotADirectoryError,
+    a folder that is not there with FileNotFoundError and a name with no extension with `unknown file
+    extension` - each a traceback that names neither the argument nor whether a picture was written.
+    Judged here, before Pillow is imported, so a machine without Pillow gives the same answer.
+    """
+    if os.path.isdir(path):
+        return (f"{path} is a folder, and this writes one picture: pass a file name such as "
+                f"docs/stats.png")
+    folder = os.path.dirname(path) or "."
+    if not os.path.isdir(folder):
+        return (f"there is no folder {folder} for {path}: create it first, or pass a name inside one "
+                f"that is there")
+    if not os.path.splitext(path)[1]:
+        return (f"{path} has no extension, so the format to write is unknown: pass a name ending in "
+                f".png")
+    return None
+
+
 FONT, OUT = font_and_out(sys.argv)
+
+# The picture is the other argument the reader types, and Pillow only refuses it after the whole thing
+# has been drawn: a folder, a folder that is not there, a path through a file and a suffixless name were
+# each a 12-line traceback with exit 1, the code a run that wrote nothing returns, saying nothing about
+# what was written. Judged before the Pillow import, so a machine without it answers the same way.
+OUT_PROBLEM = out_problem(OUT)
+if OUT_PROBLEM:
+    sys.exit(f"{OUT_PROBLEM}. Nothing was written.")
 
 # Pillow is not in tools/requirements.txt: it is only needed to redraw the README card, so point at the
 # optional file the way tools/flamechart.py does, instead of ending in a bare traceback.
@@ -37,7 +67,7 @@ try:
 except ImportError:
     sys.exit("readme_stats.py needs Pillow: tools/venv/bin/pip install -r tools/requirements-perf.txt")
 
-STATS = [("332", "TV MODELS"), ("91", "BRANDS"), ("28", "LANGUAGES"), ("526 KB", "LAUNCHER")]
+STATS = [("335", "TV MODELS"), ("92", "BRANDS"), ("29", "LANGUAGES"), ("532 KB", "LAUNCHER")]
 W, H = 1600, 240
 img = Image.new("RGB", (W, H), "#15181e"); d = ImageDraw.Draw(img)
 def f(size, wt):
@@ -63,4 +93,9 @@ for i, (n, l) in enumerate(STATS):
     sp = 5; w = sum(d.textlength(c, font=lab) for c in l) + sp * (len(l) - 1); x = cx - w / 2
     for c in l: d.text((x, 160), c, font=lab, fill="#aab3bd"); x += d.textlength(c, font=lab) + sp
     if i: d.line([(PAD + col * i, 56), (PAD + col * i, H - 56)], fill="#2c313a", width=3)
-img.save(OUT, optimize=True)
+try:
+    img.save(OUT, optimize=True)
+except (OSError, ValueError) as error:
+    # The read-only folder or the full disk, or an extension Pillow does not know (`.txt`): found at the
+    # write, after the drawing. Name the file and say that no picture came of the run.
+    sys.exit(f"cannot write {OUT}: {error}. Nothing was written.")

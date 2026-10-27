@@ -30,7 +30,7 @@ The 15 `uk.co.freeview.*` packages and `tv.wuaki.apptv` were already disabled at
   never-disable line. Those seven were re-enabled and restricted from running in the background instead:
 
   ```bash
-  "$PY" -I tools/tv.py 'cmd appops set <package> RUN_ANY_IN_BACKGROUND ignore'
+  tools/venv/bin/python -I tools/tv.py 'cmd appops set <package> RUN_ANY_IN_BACKGROUND ignore'
   # undo: cmd appops set <package> RUN_ANY_IN_BACKGROUND allow
   ```
 
@@ -41,7 +41,7 @@ The 15 `uk.co.freeview.*` packages and `tv.wuaki.apptv` were already disabled at
   `cmd appops set ... RECORD_AUDIO ignore` stopped it. Revoking the permission did (28% to 0.4% of one core):
 
   ```bash
-  "$PY" -I tools/tv.py 'pm revoke com.google.android.katniss android.permission.RECORD_AUDIO'
+  tools/venv/bin/python -I tools/tv.py 'pm revoke com.google.android.katniss android.permission.RECORD_AUDIO'
   # undo: pm grant com.google.android.katniss android.permission.RECORD_AUDIO
   ```
 

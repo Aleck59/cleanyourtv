@@ -303,7 +303,7 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
   answers when it is not a Live TV or input app. `tools/disable.sh` (`disable.ps1`) keeps any listed
   app that query names and skips it with "the TV opens its HDMI/AV inputs and channels with it", so
   put its line in a list of its own and apply that with `HANDLERS_ALLOW=1` (`$env:HANDLERS_ALLOW`):
-  the rest of your list keeps the guard. Run `tools/check.py --fix` on that list with the same
+  the rest of your list keeps the guard. Run `tools/venv/bin/python -I tools/check.py --fix` on that list with the same
   switch, or it leaves the app on and exits 1. `disable.ps1` reads the switch once and clears it
   from the environment, so one `$env:HANDLERS_ALLOW=1` covers only that one run (#1845); `check.py
   --fix` still reads it, and in PowerShell it stays set until the window is closed: run
@@ -564,6 +564,21 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
   above) and open this launcher from its app row, where voice search works normally because the results
   screen comes up over it; or search inside YouTube with its on-screen mic. The Projectivy community found
   the same (voice results "need the launcher X search results page").
+- **Every mic press answers "Sorry, not available in this profile yet"** once launcherx is disabled, seen on a
+  TCL 75Q7CXB (G08, Google TV 14, `UTT2.250416.001 AU02`) with this launcher as Home. The Assistant opens and
+  hears the press, then gives up before listening: logcat has `katniss_interactor_KatnissVoiceInteractionUtilsImpl:
+  Assistant is not enabled in LauncherX kids mode or privacy mode. Will punt.` It reads that mode from launcherx,
+  so with launcherx disabled it cannot tell and refuses, whatever profile is signed in. Nothing in the debloat
+  list is involved; `katniss` and `com.google.android.tv.remote.service` were both enabled. What works is the same
+  as in the entry above: launcherx enabled, with this launcher opened from its row or reached through
+  `stock_home_redirect` (see `examples/tcl-q7c-google-tv`, "Working alternative").
+- **Pressing the mic shows no listening indicator at all**, seen on the same 75Q7CXB
+  before the entry above: each press logs `AtvRemote.BleRemoteDevice: HTT session initiated`, so the remote does
+  send it, then `AtvRemote.AppOpsDisclosureService: com.google.android.katniss doesn't have access to the
+  on-remote mic` and a `SensorPrivacyService` line saying katniss started using sensor 1 (the microphone).
+  Switching on Microphone access in the TV's Settings (Privacy > Microphone) brought the button back, and it
+  stayed after a reboot. Don't judge it from `dumpsys sensor_privacy`: that set read `state_type=1` for the
+  microphone both before and after, while the button failed and while it worked.
 - **The remote's mic button does nothing, or opens the Assistant and it never hears you**, seen on a
   Xiaomi TV Box S 3rd gen (`MiTV-AFMU0`, `twilight`, Google TV 14, `V816.0.7.0.UZFAABX`). Two
   packages have to stay enabled, and re-enabling only one of them is what makes this hard to
@@ -647,6 +662,19 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
   com.google.android.apps.mediashell"` restarts it (the TV starts it again on demand), and
   advertising returned within seconds, without a reboot. Device notes:
   [TCL 75QM751G](devices/tcl-75qm751g-qm7.md).
+  On Android 14 the receiver may be frozen rather than hung: with launcherx disabled nothing keeps it
+  above the cached state, and the cached-app freezer stops it a few minutes after each wake. A TCL Smart TV Pro
+  (`G08_4K_US`, `UTT2.250416.001 AU16`) showed `isFrozen=true` and `curProcState=19` in
+  `tools/tv.py "dumpsys activity processes | grep -A3 mediashell"`, and `ActivityManager: freezing <pid>
+  com.google.android.apps.mediashell` in `logcat` every two or three minutes, with the same slow and
+  missing discovery and, once, the `CLOSE_WAIT` sockets on 8009. A force-stop only helps until the next
+  freeze. What lasts is an app that is always running binding the receiver: there, the Home app binding
+  `com.google.android.apps.mediashell/.CastReceiverService` (action `com.google.cast.action.BIND`, with
+  the package in its `<queries>`) moved it to `vis` with `(service)` in
+  `tools/tv.py "dumpsys activity oom | grep -A1 mediashell"`, and it has not frozen since. This repo's
+  launcher does not do that today. That the freezing causes the lost discovery is inferred from the two
+  showing up together, not proven: if `isFrozen=true` is not there, the receiver is hung, as above.
+  [The G08 US notes](../examples/tcl-g08-us-google-tv/README.md#fourth-unit-cast-and-the-freezer).
 - **The TV drops off Wi-Fi every minute right after the install**, seen on Google TV 14 (Xiaomi
   MiTV-MZTU0): the same setupwraith `.RecoveryActivity` took Home and system_server crash-looped
   on it. The install script now starts the new launcher before disabling the stock one, sets the
@@ -881,6 +909,17 @@ running back on the list the next time it starts; a helper turned off in Setting
 - **All vendor buttons die at once** and `logcat` says `GLOBAL_BUTTON ... process is bad`: the
   global-key receiver crashes on the disabled launcherx and Android stops starting it. Map every such
   keycode in the helpers, also for disabled apps. See [the MOSR4 note](devices/xiaomi-mitv-mosr4.md).
+- **A remote shortcut (such as a "Live" or TV button) opens Google Play Store or crashes after debloating**:
+  When a target app such as Live Channels (`com.google.android.tv`) is disabled, pressing its physical
+  button makes OEM broadcast receivers (such as Xiaomi's `com.xiaomi.android.tvsetup.partnercustomizer/.GlobalKeyReceiver`)
+  launch a market intent to install the missing package, or crash repeatedly.
+  To remap it cleanly, put its hardware scancode in `app_keys`: `"scan:<scancode>:<package>"` (e.g.
+  `"scan:399:org.smarttube.stable"` on the Xiaomi Mi Box S, read from `getevent -lt`) and rebuild with
+  `INPUT_KEY_SERVICE=1`.
+  **Use the scancode form (`scan:<scancode>`) rather than a raw keycode (`191`):** generic button keycodes
+  like `KEYCODE_BUTTON_4` (191) may be shared with other buttons on some remotes/key layouts, so mapping by keycode
+  can unintentionally hijack other buttons.
+  `scan:` checks match first and target only that specific physical button. See [the Mi Box S note](devices/xiaomi-mi-box-s.md).
 - **The list still names the helper but `accessibility_enabled` is `0`**, so nothing is bound and the
   button does nothing (not the force stop below): on a TCL C6K Pro (`G08`, Android 14,
   [#1047](https://github.com/Gathin23/cleanyourtv/issues/1047)) a reboot left

@@ -64,7 +64,7 @@ class WrongHandlerNoteTest(unittest.TestCase):
         self.assertIn("a list of its own", self.note)
 
     def test_the_bullet_says_check_fix_needs_it_too(self):
-        self.assertIn("`tools/check.py --fix`", self.note)
+        self.assertIn("`tools/venv/bin/python -I tools/check.py --fix`", self.note)
 
     def test_the_quoted_message_is_what_the_scripts_print(self):
         quoted = re.findall(r'"(the TV opens [^"]+)"', self.note)

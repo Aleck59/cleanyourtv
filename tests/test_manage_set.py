@@ -236,6 +236,28 @@ class SetThemeFolderTest(unittest.TestCase):
             return str(stop.code)
         return None
 
+    def test_utf8_themes_keep_other_keys_with_or_without_a_bom(self):
+        original = {
+            "greeting_name": "客廳 Trịnh",
+            "columns": 6,
+            "custom": {"label": "夜晚", "values": [True, None, {"amount": 7}]},
+            "dock_band": False,
+        }
+        text = json.dumps(original, ensure_ascii=False, indent=2) + "\n"
+        for encoding in ("utf-8", "utf-8-sig"):
+            for newline in ("\n", "\r\n"):
+                with self.subTest(encoding=encoding, newline=newline):
+                    self.config.write_bytes(text.replace("\n", newline).encode(encoding))
+                    self.push.reset_mock()
+                    self.assertIsNone(self.set_key("dock_band", "true"))
+                    written = self.config.read_bytes()
+                    self.assertFalse(written.startswith(b"\xef\xbb\xbf"))
+                    updated = json.loads(written.decode("utf-8"))
+                    self.assertIs(updated["dock_band"], True)
+                    self.assertEqual(updated, dict(original, dock_band=True))
+                    self.push.assert_called_once_with(
+                        ["bash", str(manage.TOOLS / "theme.sh"), str(self.theme.resolve())], manage.ROOT)
+
     def test_a_config_json_that_is_not_json_is_named_and_left_alone(self):
         self.config.write_text('{"greeting_name": "Old",}\n', encoding="utf-8")
         before = self.config.read_bytes()

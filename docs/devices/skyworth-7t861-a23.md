@@ -83,9 +83,9 @@ cd launcher
 Install the compiled launcher and the companion `coocaa-home-shim` (`com.ccos.tv.homepage`), which bridges Coocaa OS home dispatch to the CleanYourTV activity. The shim is not part of this repository: it is its own project, [coocaa-home-shim](https://github.com/VincentYe123/coocaa-home-shim), whose releases page carries the APK (or build it from source). `tools/tv.py` installs nothing on its own, so an APK goes up with `tools/b64push.py` and the TV's own `pm install` runs it, the way [`examples/skyworth-7s60-a5`](../../examples/skyworth-7s60-a5/README.md) does it on the same OS:
 
 ```bash
-TV_HOST=<tv ip> tools/b64push.py launcher/app/build/outputs/apk/release/app-release.apk /data/local/tmp/tvhome.apk
+TV_HOST=<tv ip> tools/venv/bin/python -I tools/b64push.py launcher/app/build/outputs/apk/release/app-release.apk /data/local/tmp/tvhome.apk
 TV_HOST=<tv ip> tools/tv.py 'pm install -r /data/local/tmp/tvhome.apk; rm -f /data/local/tmp/tvhome.apk'
-TV_HOST=<tv ip> tools/b64push.py coocaa-home-shim.apk /data/local/tmp/shim.apk
+TV_HOST=<tv ip> tools/venv/bin/python -I tools/b64push.py coocaa-home-shim.apk /data/local/tmp/shim.apk
 TV_HOST=<tv ip> tools/tv.py 'pm install -r /data/local/tmp/shim.apk; rm -f /data/local/tmp/shim.apk'
 ```
 

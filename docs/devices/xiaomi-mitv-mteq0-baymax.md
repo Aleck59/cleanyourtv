@@ -17,12 +17,12 @@ The same package-name HOME allowlist as the MiTV-AETP0
 The opt-in identity worked here as documented for the AETP0:
 
 ```bash
-"$PY" -I tools/tv.py 'pm path com.ts.launcher'        # must print nothing
+tools/venv/bin/python -I tools/tv.py 'pm path com.ts.launcher'        # must print nothing
 (cd launcher && ./gradlew assembleRelease -PlauncherApplicationId=com.ts.launcher)
-"$PY" -I tools/b64push.py launcher/app/build/outputs/apk/release/app-release.apk /data/local/tmp/ts.apk
-"$PY" -I tools/tv.py 'pm install -r /data/local/tmp/ts.apk'
-"$PY" -I tools/tv.py 'cmd package set-home-activity --user 0 com.ts.launcher/com.gathin.tvhome.MainActivity'
-"$PY" -I tools/tv.py 'cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME'
+tools/venv/bin/python -I tools/b64push.py launcher/app/build/outputs/apk/release/app-release.apk /data/local/tmp/ts.apk
+tools/venv/bin/python -I tools/tv.py 'pm install -r /data/local/tmp/ts.apk'
+tools/venv/bin/python -I tools/tv.py 'cmd package set-home-activity --user 0 com.ts.launcher/com.gathin.tvhome.MainActivity'
+tools/venv/bin/python -I tools/tv.py 'cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME'
 ```
 
 `resolve-activity` answered `com.ts.launcher/com.gathin.tvhome.MainActivity`, also with
@@ -85,7 +85,7 @@ this set, so the driver runs with `CN` and never sees 5 GHz networks on channels
 on channel 104 was invisible; Xiaomi routers pick CN-legal channels, so they work). Fix:
 
 ```bash
-"$PY" -I tools/tv.py 'settings put global service_region VN'   # your country code
+tools/venv/bin/python -I tools/tv.py 'settings put global service_region VN'   # your country code
 # then Wi-Fi off and on (or reboot); dumpsys wifi shows mDriverCountryCode
 ```
 

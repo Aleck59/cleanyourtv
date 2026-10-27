@@ -272,7 +272,9 @@ class GenTablesFontTest(unittest.TestCase):
                          "handing --font changed what --check says about the tables")
 
 
-COMMAND = re.compile(r"`(tools/readme_[\w]+\.py [^`]*)`")   # a command: the script and what it is given
+# A command: what runs the script, then the script and what it is given.
+SCRIPT = re.compile(r"tools/readme_[\w]+\.py")
+COMMAND = re.compile(r"`([^`]*" + SCRIPT.pattern + r" [^`]*)`")
 
 
 class PressRecipeShapeTest(unittest.TestCase):
@@ -282,7 +284,7 @@ class PressRecipeShapeTest(unittest.TestCase):
         return COMMAND.findall(PRESS.read_text(encoding="utf-8"))
 
     def test_the_page_prints_the_redraw_commands(self):
-        named = {cmd.split()[0] for cmd in self.commands()}
+        named = {SCRIPT.findall(cmd)[0] for cmd in self.commands()}
         self.assertEqual({"tools/readme_featured.py", "tools/readme_card.py"}, named,
                          "press.md no longer prints both redraw commands, so this check would prove nothing")
 
@@ -290,10 +292,14 @@ class PressRecipeShapeTest(unittest.TestCase):
         for cmd in self.commands():
             with self.subTest(command=cmd):
                 parts = cmd.split()
-                self.assertEqual(3, len(parts), f"press.md prints '{cmd}', which is not <script> <font> <picture>")
-                self.assertTrue((ROOT / parts[0]).is_file(), f"press.md names {parts[0]}, which is not in the repo")
-                self.assertTrue((ROOT / parts[2]).is_file(),
-                                f"press.md writes {parts[2]}, which the repo does not ship")
+                at = parts.index(SCRIPT.findall(cmd)[0])
+                arguments = parts[at + 1:]
+                self.assertEqual(2, len(arguments),
+                                 f"press.md prints '{cmd}', which is not <script> <font> <picture>")
+                self.assertTrue((ROOT / parts[at]).is_file(),
+                                f"press.md names {parts[at]}, which is not in the repo")
+                self.assertTrue((ROOT / arguments[1]).is_file(),
+                                f"press.md writes {arguments[1]}, which the repo does not ship")
 
     def test_the_page_says_the_font_is_not_in_the_repo(self):
         # The one fact a reader cannot get from the commands themselves: the font path is theirs to supply.

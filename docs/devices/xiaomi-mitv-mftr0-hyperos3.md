@@ -38,8 +38,8 @@ third-party apps do not hold.
 left the TV with `mCurrentFocus=null` and no usable window until PatchWall was re-enabled:
 
 ```bash
-"$PY" -I tools/tv.py 'pm enable --user 0 com.mitv.tvhome'
-"$PY" -I tools/tv.py 'cmd package set-home-activity --user 0 com.mitv.tvhome/.MainActivityUserMode'
+tools/venv/bin/python -I tools/tv.py 'pm enable --user 0 com.mitv.tvhome'
+tools/venv/bin/python -I tools/tv.py 'cmd package set-home-activity --user 0 com.mitv.tvhome/.MainActivityUserMode'
 ```
 
 On HyperOS TV 2 and on other HyperOS TV 3 sets (MiTV-ASTR0, MiTV-MFFU0) the route that worked is the

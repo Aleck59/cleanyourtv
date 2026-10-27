@@ -30,7 +30,37 @@ def font_and_out(argv):
     return font, out
 
 
+def out_problem(path):
+    """Why the picture at `path` cannot be written, or None.
+
+    The second argument the reader types, and the one Pillow only judges at the end of the draw:
+    `img.save()` answers a folder with IsADirectoryError, a path through a file with NotADirectoryError,
+    a folder that is not there with FileNotFoundError and a name with no extension with `unknown file
+    extension` - each a traceback that names neither the argument nor whether a picture was written.
+    Judged here, before Pillow is imported, so a machine without Pillow gives the same answer.
+    """
+    if os.path.isdir(path):
+        return (f"{path} is a folder, and this writes one picture: pass a file name such as "
+                f"docs/card.jpg")
+    folder = os.path.dirname(path) or "."
+    if not os.path.isdir(folder):
+        return (f"there is no folder {folder} for {path}: create it first, or pass a name inside one "
+                f"that is there")
+    if not os.path.splitext(path)[1]:
+        return (f"{path} has no extension, so the format to write is unknown: pass a name ending in "
+                f".jpg")
+    return None
+
+
 FONT, OUT = font_and_out(sys.argv)
+
+# The picture is the other argument the reader types, and Pillow only refuses it after the whole thing
+# has been drawn: a folder, a folder that is not there, a path through a file and a suffixless name were
+# each a 12-line traceback with exit 1, the code a run that wrote nothing returns, saying nothing about
+# what was written. Judged before the Pillow import, so a machine without it answers the same way.
+OUT_PROBLEM = out_problem(OUT)
+if OUT_PROBLEM:
+    sys.exit(f"{OUT_PROBLEM}. Nothing was written.")
 
 # See readme_stats.py: Pillow lives in the optional requirements file, so name it rather than crash.
 try:
@@ -85,4 +115,9 @@ card = Image.new("RGB", (W, H), BG); d = ImageDraw.Draw(card); y = 0
 for i, p in enumerate(parts):
     if i: y += SEP; d.line([(PAD, y), (W - PAD, y)], fill=LINE, width=2); y += SEP
     card.paste(p, (0, y)); y += p.height
-card.save(OUT, quality=88, optimize=True)
+try:
+    card.save(OUT, quality=88, optimize=True)
+except (OSError, ValueError) as error:
+    # The read-only folder or the full disk, or an extension Pillow does not know (`.txt`): found at the
+    # write, after the drawing. Name the file and say that no picture came of the run.
+    sys.exit(f"cannot write {OUT}: {error}. Nothing was written.")

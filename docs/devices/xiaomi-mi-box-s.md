@@ -38,6 +38,16 @@ Nothing broke between batches.
   `HomeKeyService` catches `KEYCODE_ALL_APPS`, so enabling it (`-HomeKeyService` on
   `launcher/build-and-install.ps1`) turns the Apps button into a second Home button. Checked with the
   real remote from inside VLC: the press started `com.gathin.tvhome/.MainActivity`.
+- **The remote's Live button opens Google Play if not overridden.** On remotes with a dedicated "Live"
+  button (MDZ-22-AB remote revisions), it sends scancode 399 (mapped to `BUTTON_4` in `Vendor_2717_Product_32b9.kl`).
+  Once `com.google.android.tv` (Live Channels) is disabled, pressing
+  it causes `com.xiaomi.android.tvsetup.partnercustomizer/.GlobalKeyReceiver` to fire a Play Store lookup
+  for the missing package ("Item not found").
+  Map it with `app_keys`: `"scan:399:<package>"` (e.g. `"scan:399:org.smarttube.stable"`) and install
+  with `INPUT_KEY_SERVICE=1` (`-InputKeyService` on Windows) so `InputKeyService` consumes the scancode
+  before `partnercustomizer` sees it. **Do not map it as keycode 191 (`KEYCODE_BUTTON_4`):** that keycode
+  may be shared with other buttons on some remotes/key layouts. The scancode form `scan:399` targets specifically
+  the physical Live button.
 - The other buttons, checked with the real remote and `getevent -lt`: Home (`KEY_HOMEPAGE`), Back,
   voice (`KEY_VOICECOMMAND`, Assistant kept) and Netflix (`KEY_VIDEO`, scancode 393 is `NETFLIX` in
   the same `.kl`) all work with the stock launcher disabled.

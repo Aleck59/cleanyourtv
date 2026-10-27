@@ -112,3 +112,67 @@ pressing the real buttons:
 `app_keys` by scancode (`scan:242:...`) with `INPUT_KEY_SERVICE=1` made them work, at the cost of the volume
 ramp, as on the second unit: with any key helper bound, holding Volume moved one step; with none, it ramps.
 Re-enabling `launcherx` to answer the buttons does not work either: it takes Home back as soon as it is enabled.
+
+## Fourth unit: 55C7K on STT2.221228.001, with the launcher
+
+TCL 55C7K, same `STT2.221228.001` build family (EU Android 12 firmware), on Wi-Fi. Applied 26 October 2026
+across two sessions with `tools/disable.sh` and `launcher/build-and-install.sh`; rebooted twice, every
+disabled package stayed disabled, and Home and Wi-Fi came back each time. One day, not weeks.
+
+- **The 55C7K model ships on this Android 12 firmware too**, not only on the Android 14 /
+  `UTT2.250416.001 AU02` build in [`examples/tcl-55c7k-uk`](../tcl-55c7k-uk). The stock launcher
+  (`com.google.android.apps.tv.launcherx`) and setup wizard (`com.google.android.tungsten.setupwraith`)
+  are the same as on the other units here.
+- **Cleanup grew from targeted to broad.** The first session disabled five apps by choice
+  (`com.google.android.play.games`, `com.google.android.videos`, `com.tcl.smartalexa`,
+  `com.tcl.magiconnectfree`, `com.tcl.gamebar`). A second session added the tracking/telemetry cleanup
+  from this folder's `debloat.txt`: `com.tcl.logkit` (the TCL log upload), `com.tcl.dashboard` and
+  `com.tcl.messagebox` (push promos), the retail-demo `com.tcl.exhibit`/`com.tcl.esticker`,
+  `com.tcl.usercenter`, `com.tcl.waterfall.overseas`, `com.tcl.partnercustomizer`,
+  `com.tcl.tv.tclhome_passive`, the help apps, `com.tcl.UpdatePeripheral`, the Google partner/feedback
+  leftovers, the MediaTek `backgrounddetection`/`network`, the three duplicate webviews, and
+  `com.android.printspooler` — plus `com.google.android.apps.tv.dreamx` once the ClockDream screensaver
+  took over. Optional apps the owner does not use were also disabled: AirPlay (all three packages),
+  `com.tcl.channelplus`, `com.tcl.ui_mediaCenter`, `com.tcl.gallery`, `com.tcl.t_solo`. Kept at the owner's
+  request: Miracast (`com.tcl.miracast`) and the TCL voice layer (`com.tcl.eva`). 37 packages disabled in
+  total; `android.autoinstalls.config.google.gtvpai` was skipped by `disable.sh`'s input-driver safety
+  check. The owner's apply/undo lists live in a private `work/` folder (gitignored), not in this folder.
+- **Launcher as Home.** `setupwraith` owned the saved Wi-Fi network (`dumpsys wifi` →
+  `cname=com.google.android.tungsten.setupwraith`); once the owner forgot and re-joined it in Settings,
+  `tools/disable.sh` disabled `setupwraith` without `FORCE_SETUPWRAITH`. `launcher/build-and-install.sh`
+  was run with `STOCK_LAUNCHER=none` (this set's `launcherx` is not in the script's known-stock list);
+  after a reboot Home was `com.gathin.tvhome/.MainActivity`, confirmed via `dumpsys activity activities`.
+- **Live TV shortcut** set to `com.tcl.tv` via `launcher/app/src/main/res/values/config.xml` for this set
+  (the built-in default targets a MediaTek package not present here). A rebuild needs that one-line edit,
+  or `live_tv_package` in a pushed theme.
+- **Six-column layout + nature-calm wallpaper** via a personal theme merged from `themes/nature-calm`:
+  dock = Netflix, Prime Video, YouTube, JioHotstar, SmartTube, Sun NXT. Twelve calm nature photos
+  (Wikimedia Commons, CC BY/CC BY-SA) rotate every 5 minutes with place + photographer captions, over a
+  frosted-glass dock at 40% opacity; `wallpaper_true_color` is on (the set has ~2.4 GB RAM). The merge
+  keeps the six columns, the dock order and the button remaps below. The Google photo screensaver
+  (`dreamx`) was disabled; the system screensaver was set to `com.gathin.tvhome/.ClockDream` with
+  `clock_wallpaper: true`, so the clock drifts over the wallpaper images instead of plain black.
+- **Remote buttons.** With `launcherx` off, the YouTube and Disney+ buttons did nothing until
+  `HomeKeyService` mapped them. Scancodes read with `getevent -lt`:
+
+  | Button | Scancode | Mapped with |
+  |---|---|---|
+  | YouTube | 245 | `app_keys: scan:245:org.smarttube.stable` |
+  | Disney+ | 762 | `app_keys: scan:762:in.startv.hotstar` |
+  | Settings (gear) | 233 | `app_keys: scan:233:settings` |
+
+  The YouTube scancode matches the third unit's. `HomeKeyService` is bound alone (`InputKeyService` not
+  needed for these), and `app_keys` is read by `HomeKeyService` too (it handles scancode entries first,
+  HomeKeyService.java line 263). `APP_AUTO_START` was set to `allow` with `appops write-settings`, as on
+  the C7K-UK unit, so the helper re-binds after a restart.
+
+  **The gear button on this remote sends scancode 233 (`KEY_FORWARDMAIL`), not keycode 83
+  (`KEYCODE_NOTIFICATION`) as the third unit's gear button does.** Since `settings_key_keycodes` (a theme
+  key, Android keycodes) cannot match a scancode that maps to `KEYCODE_UNKNOWN`, and
+  `settings_key_scancodes` is `config.xml`-only, the gear button is mapped via `app_keys` with the
+  `settings` action: `scan:233:settings`. Other 55C7K owners whose gear button does nothing after
+  `launcherx` is disabled should capture their scancode with `getevent -t` (`adb shell 'timeout 12 getevent
+  -t'`, the `0001 <hex> 00000001` line is the scancode) and use the same `scan:<code>:settings` form.
+- **The volume trade-off applies here too.** With `HomeKeyService` bound, holding Volume moves one step per
+  press instead of ramping; clearing the helper restores the ramp. The owner kept the two button mappings
+  and accepted stepwise volume, as on the second and third units.

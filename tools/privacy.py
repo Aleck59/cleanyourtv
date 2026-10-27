@@ -370,6 +370,12 @@ def list_lines(result, include_low, name):
 
 def target_problem(path):
     """Why --write cannot write the file `path`, or None."""
+    if os.path.isdir(path):
+        # The argument is a folder: `--write lists/`, or `--write` with a name that happens to be a
+        # directory. Saying it "already exists" answers a question the owner did not ask, and letting
+        # it through is an IsADirectoryError after the whole audit.
+        return (f"{path} is a folder, and --write takes a file name to create, "
+                f"e.g. {os.path.join(path, 'privacy.txt')}.")
     if os.path.exists(path):
         # A second audit of the same TV may legitimately differ, but silently replacing a list the
         # owner is about to apply is how a hand edit disappears.
@@ -388,8 +394,18 @@ def write_list(path, result, include_low):
     # The header names the file as it was typed, like the commands printed below; an absolute path
     # is cut to the file name, which keeps the owner's home folder out of the list.
     lines = list_lines(result, include_low, os.path.basename(path) if os.path.isabs(path) else path)
-    with open(path, "w") as f:
-        f.write("\n".join(lines) + "\n")
+    text = "\n".join(lines) + "\n"
+    try:
+        with open(path, "w") as f:
+            f.write(text)
+    except OSError as error:
+        # The audit is two shell calls for each package it probed, slow on old firmware: a file the
+        # folder would not take should not cost the owner a second run of it. What was to be written
+        # goes to stdout, so it can be saved by hand.
+        sys.stdout.write(text)
+        raise SystemExit(f"the audit finished, but {path} could not be written: "
+                         f"{error.strerror or error}\n"
+                         "the list is printed above: copy it into a file you can write.")
     names = sum(1 for line in lines if line and not line.startswith("#"))
     print(f"wrote {names} packages to {path}")
     if include_low and result["skipped"]:
@@ -405,7 +421,10 @@ def main():
     args = sys.argv[1:]
     include_low = "--include-low" in args
     args = [a for a in args if a != "--include-low"]
-    if args and (len(args) != 2 or args[0] != "--write"):
+    if args and (len(args) != 2 or args[0] != "--write" or not args[1]):
+        # An empty name is what `--write "$OUT"` sends when OUT was never set - the same mistake as
+        # leaving the name out, and os.path checks read "" as "a file in the folder I am in", so it
+        # used to come back as a FileNotFoundError after the whole audit.
         sys.stderr.write("usage: privacy.py                       audit the connected TV\n"
                          "       privacy.py --write <file> [--include-low]\n"
                          "                                    write the candidates as a debloat list\n")

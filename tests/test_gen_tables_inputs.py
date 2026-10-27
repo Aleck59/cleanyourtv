@@ -11,6 +11,7 @@ maintainer sees; the trees come from tests/test_gen_tables.py, so a valid checko
 
 Run from the repository root: python3 -m unittest discover -s tests -v
 """
+import json
 import subprocess
 import sys
 import tempfile
@@ -154,18 +155,67 @@ class AdoptTest(unittest.TestCase):
             self.assertEqual(out, "")
 
 
+class CheckAdoptTest(unittest.TestCase):
+    def assert_conflict(self, code, out, err):
+        self.assertEqual(code, 2, err)
+        self.assertEqual(out, "")
+        self.assertIn("usage:", err)
+        error = err.splitlines()[-1]
+        self.assertIn("--check", error)
+        self.assertIn("--adopt", error)
+
+    def test_existing_metadata_is_not_changed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = valid(tmp)
+            metadata = root / "examples" / "tcl-a" / "tv.json"
+            before = metadata.read_bytes()
+            patch = root / "pr.diff"
+            patch.write_text("-| `tcl-a/` | TCL A | Android TV 11 | ads off |\n"
+                             "+| `tcl-a/` | TCL A | Android TV 11 | updated notes |\n", encoding="utf-8")
+            result = run("--root", str(root), "--check", "--adopt", str(patch), cwd=root)
+            self.assertEqual(metadata.read_bytes(), before)
+            self.assert_conflict(*result)
+
+    def test_missing_metadata_is_not_created(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = valid(tmp)
+            add(root, "tcl-d", None)
+            metadata = root / "examples" / "tcl-d" / "tv.json"
+            patch = root / "pr.diff"
+            patch.write_text("| `tcl-d/` | TCL D | Android TV 11 | ads off |\n", encoding="utf-8")
+            result = run("--root", str(root), "--adopt", str(patch), "--check", cwd=root)
+            self.assertFalse(metadata.exists())
+            self.assert_conflict(*result)
+
+    def test_conflict_is_reported_before_inputs_are_checked(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "missing-checkout"
+            patch = Path(tmp) / "missing.diff"
+            self.assert_conflict(*run("--root", str(root), "--check", "--adopt", str(patch), cwd=tmp))
+            self.assertFalse(root.exists())
+
+    def test_an_empty_adopt_argument_still_conflicts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = valid(tmp)
+            self.assert_conflict(*run("--root", str(root), "--check", "--adopt", "", cwd=root))
+
+
 class UnchangedTest(unittest.TestCase):
     def test_a_checkout_exits_0_and_a_stale_one_still_1(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = valid(tmp)
             code, out, err = run("--root", str(root))
             self.assertEqual(code, 0, err)
+            metadata = root / "examples" / "tcl-a" / "tv.json"
+            before = metadata.read_bytes()
             code, out, err = run("--root", str(root), "--check")
             self.assertEqual(code, 0, err)
+            self.assertEqual(metadata.read_bytes(), before)
             add(root, "tcl-c", tv("TCL C", "TCL"))
             code, out, err = run("--root", str(root), "--check")
             self.assertEqual(code, 1, err)
             self.assertIn("Out of date", out)
+            self.assertEqual(metadata.read_bytes(), before)
 
     def test_a_readable_patch_is_still_applied(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -177,6 +227,8 @@ class UnchangedTest(unittest.TestCase):
             self.assertEqual(code, 0, err)
             self.assertIn("examples/tcl-d/tv.json", out)
             self.assertTrue((root / "examples" / "tcl-d" / "tv.json").is_file())
+            self.assertEqual(json.loads((root / "examples" / "tcl-d" / "tv.json").read_text(encoding="utf-8")),
+                             tv("TCL D", "TCL"))
 
 
 if __name__ == "__main__":

@@ -65,14 +65,22 @@ def check_cell(where, key, value):
     return out
 
 
-def load(root):
-    """[(folder name, tv.json dict)] for every folder in examples/; raises Problem listing every bad file."""
+def load(root, allow_missing=False):
+    """[(folder name, tv.json dict)] for every folder in examples/; raises Problem listing every bad file.
+
+    `--adopt` writes the tv.json of a folder that has none, so it reads the checkout with allow_missing:
+    a folder without one is not a problem there, while every file that is there is judged by these same
+    rules before the patch is applied.
+    """
     problems, entries = [], []
     for folder in folders(root):
         where = f"examples/{folder.name}/tv.json"
         path = folder / "tv.json"
         if not path.is_file():
-            problems.append(f"{where} is missing: it holds the folder's row in the README tables "
+            if allow_missing and not path.exists():
+                continue
+            what = "is missing" if not path.exists() else "is not a file"
+            problems.append(f"{where} {what}: it holds the folder's row in the README tables "
                             f"(see CONTRIBUTING.md, step 4)")
             continue
         try:
@@ -240,18 +248,23 @@ def adopt(root, patch_text):
     and notes, a README row with the same TV gives readme_os when its OS differs. A folder with no tv.json
     gets one. A folder that has one (a PR that edited its row) takes the new tv, os and notes only if the
     row the PR removed is what its tv.json still says; if main has changed the row since, nothing is
-    written for it and Problem is raised once the rest are done. Returns [(folder, what happened)]."""
+    written for it and Problem is raised once the rest are done. Returns [(folder, what happened)].
+
+    The tv.json files already in the checkout are read through load(), so one this script cannot use is
+    named in the words --check names it and Problem is raised before the first write: a patch is applied
+    whole or not at all, which is what the module's exit-2 line says."""
     lines = patch_text.split("\n")
     added = [l[1:] if l.startswith("+") else l for l in lines if not l.startswith(("-", " "))]
     removed = [l[1:] for l in lines if l.startswith("-")]
     rows = {m.group(1): m.groups()[1:] for m in map(EXAMPLES_ROW.match, added) if m}
     before = {m.group(1): m.groups()[1:] for m in map(EXAMPLES_ROW.match, removed) if m}
     readme_os = {m.group(1): m.group(2) for m in map(README_ROW.match, added) if m}
-    have = {}
-    for folder in folders(root):
-        path = folder / "tv.json"
-        if path.is_file():
-            have[folder.name] = json.loads(path.read_text(encoding="utf-8"))
+    # Every file that is there, judged the way the tables are built from it. Reading them with a bare
+    # json.loads made a trailing comma a JSONDecodeError traceback and a list at the root an
+    # AttributeError, both exit 1 - the code --check keeps for "the tables are out of date" - and a
+    # tv.json load() refuses was only found by the render step that follows, after this had written the
+    # patch's new folders: the run then said nothing was written when some of it was.
+    have = dict(load(root, allow_missing=True))
     known = sorted({d.get("brand", "") for d in have.values()} - {""})
     out, stale_rows = [], []
     for name, (tv, os_cell, notes) in sorted(rows.items()):
@@ -315,6 +328,8 @@ def main(argv=None):
                                    "docs/stats.png and docs/card.jpg when a count changed")
     ap.add_argument("--adopt", metavar="PATCH", help="write missing tv.json files from the rows in PATCH first")
     a = ap.parse_args(argv)
+    if a.check and a.adopt is not None:
+        ap.error("--check and --adopt cannot be used together")
     if a.font and not Path(a.font).is_file():
         # The scripts this hands the font to exit with their own line, but subprocess.run(check=True) would
         # then turn that into a CalledProcessError traceback, which names neither the file nor where it is.
